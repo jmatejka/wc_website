@@ -404,9 +404,9 @@ function App() {
     if (reducedMotion || !confettiLauncherRef.current) return
     const shoot = confettiLauncherRef.current
     shoot({
-      particleCount: 40,
-      spread: 70,
-      startVelocity: 35,
+      particleCount: 160,
+      spread: 90,
+      startVelocity: 70,
       gravity: 1.1,
       scalar: 0.9,
       origin: { x: 0.5, y: 0.65 },
