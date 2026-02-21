@@ -38,6 +38,8 @@ type AnimatedRewardTileProps = {
 }
 
 function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
+  const fallbackSrc = '/assets/animals/animal_1lb.png'
+  const [resolvedSrc, setResolvedSrc] = useState(src)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
   const prevOnRef = useRef<boolean>(isOn)
@@ -89,8 +91,17 @@ function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
   }
 
   useEffect(() => {
+    setResolvedSrc(src)
+  }, [src])
+
+  useEffect(() => {
     const img = new Image()
-    img.src = src
+    img.src = resolvedSrc
+    img.onerror = () => {
+      if (resolvedSrc !== fallbackSrc) {
+        setResolvedSrc(fallbackSrc)
+      }
+    }
     img.onload = () => {
       imageRef.current = img
       const canvas = canvasRef.current
@@ -103,7 +114,7 @@ function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
         ctx.clearRect(0, 0, 128, 128)
       }
     }
-  }, [src])
+  }, [resolvedSrc])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -155,7 +166,7 @@ function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
       />
       <div
         className="animal-silhouette"
-        style={{ ['--animal-url' as any]: `url(${src})` }}
+        style={{ ['--animal-url' as any]: `url(${resolvedSrc})` }}
         aria-hidden
       />
     </figure>
