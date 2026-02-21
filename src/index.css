@@ -516,6 +516,45 @@ a {
   opacity: 1;
 }
 
+.locked-collections {
+  display: grid;
+  gap: 14px;
+}
+
+.locked-track {
+  border: 2px solid var(--black);
+  background: #f7f7f7;
+  padding: 10px;
+}
+
+.locked-ribbon {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border: 2px solid var(--black);
+  background: var(--pink);
+  color: var(--black);
+  font-size: 12px;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.locked-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 64px);
+  gap: 4px;
+  justify-content: center;
+}
+
+.locked-grid img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: grayscale(1) brightness(0.82) contrast(1.05);
+  opacity: 0.9;
+}
+
 .screenshot-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -677,6 +716,10 @@ a {
     grid-template-columns: repeat(auto-fill, minmax(96px, 96px));
   }
 
+  .locked-grid {
+    grid-template-columns: repeat(8, 64px);
+  }
+
   .unlock-section {
     min-height: 48vh;
   }
@@ -719,6 +762,15 @@ a {
   .animal-grid,
   .screenshot-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 80px));
+  }
+
+  .locked-grid {
+    grid-template-columns: repeat(6, 56px);
+  }
+
+  .locked-grid img {
+    width: 56px;
+    height: 56px;
   }
 }
 
@@ -763,6 +815,15 @@ a {
   .animal-grid,
   .screenshot-grid {
     grid-template-columns: repeat(auto-fill, minmax(64px, 64px));
+  }
+
+  .locked-grid {
+    grid-template-columns: repeat(4, 48px);
+  }
+
+  .locked-grid img {
+    width: 48px;
+    height: 48px;
   }
 }
 

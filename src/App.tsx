@@ -20,6 +20,21 @@ const collectionAnimals = Array.from({ length: 60 }, (_, index) => {
   return { src: `/assets/animals/animal_${lbs}lb.png`, label: `${lbs} lb reward` }
 })
 
+const lockedClayAnimals = Array.from({ length: 24 }, (_, index) => {
+  const lbs = index + 1
+  return { src: `/assets/locked/clay_animals/clay_animal_${lbs}lb.jpg`, label: `Clay animal ${lbs} lb` }
+})
+
+const lockedPixelObjects = Array.from({ length: 24 }, (_, index) => {
+  const lbs = index + 1
+  return { src: `/assets/locked/pixel_objects/object_${lbs}lb.png`, label: `Pixel object ${lbs} lb` }
+})
+
+const lockedClayObjects = Array.from({ length: 24 }, (_, index) => {
+  const lbs = index + 1
+  return { src: `/assets/locked/clay_objects/clay_object_${lbs}lb.jpg`, label: `Clay object ${lbs} lb` }
+})
+
 const unlockRewardExamples = [
   { src: '/assets/animals/animal_12lb.png' },
   { src: '/assets/animals/animal_22lb.png' },
@@ -453,6 +468,32 @@ function App() {
               isOn={litAnimalOrder.includes(index)}
             />
           ))}
+        </div>
+        <div className="locked-collections">
+          <section className="locked-track">
+            <div className="locked-ribbon">Unlockable - Clay Animals</div>
+            <div className="locked-grid">
+              {lockedClayAnimals.map((item) => (
+                <img key={item.src} src={item.src} alt={item.label} loading="lazy" />
+              ))}
+            </div>
+          </section>
+          <section className="locked-track">
+            <div className="locked-ribbon">Unlockable - Pixel Objects</div>
+            <div className="locked-grid">
+              {lockedPixelObjects.map((item) => (
+                <img key={item.src} src={item.src} alt={item.label} loading="lazy" />
+              ))}
+            </div>
+          </section>
+          <section className="locked-track">
+            <div className="locked-ribbon">Unlockable - Clay Objects</div>
+            <div className="locked-grid">
+              {lockedClayObjects.map((item) => (
+                <img key={item.src} src={item.src} alt={item.label} loading="lazy" />
+              ))}
+            </div>
+          </section>
         </div>
       </section>
 
