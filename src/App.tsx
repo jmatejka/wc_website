@@ -1,0 +1,470 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import confetti from 'canvas-confetti'
+
+const featureCards = [
+  { title: 'One-Pound Rewards', body: 'Every pound of progress unlocks a new collectible reward in your set.' },
+  { title: 'Motivation You Can See', body: 'Swap visual collections to keep your journey fresh, playful, and sticky.' },
+  { title: 'Fast Tracking Loop', body: 'Manual logging plus Health Connect sync means less friction, more momentum.' },
+]
+
+const screenshotPaths = [
+  '/assets/screenshots_half/Screenshot_20260220_182416.png',
+  '/assets/screenshots_half/Screenshot_20260220_182429.png',
+  '/assets/screenshots_half/Screenshot_20260220_182437.png',
+  '/assets/screenshots_half/Screenshot_20260220_182449.png',
+  '/assets/screenshots_half/Screenshot_20260220_182525.png',
+]
+
+const collectionAnimals = Array.from({ length: 60 }, (_, index) => {
+  const lbs = index + 1
+  return { src: `/assets/animals/animal_${lbs}lb.png`, label: `${lbs} lb reward` }
+})
+
+const unlockRewardExamples = [
+  { src: '/assets/animals/animal_12lb.png' },
+  { src: '/assets/animals/animal_22lb.png' },
+  { src: '/assets/animals/animal_40lb.png' },
+  { src: '/assets/animals/animal_57lb.png' },
+  { src: '/assets/animals/animal_75lb.png' },
+  { src: '/assets/animals/animal_91lb.png' },
+]
+
+const confettiColors = ['#FFEB3B', '#FF4081', '#2196F3', '#4CAF50', '#F44336', '#FFFFFF']
+
+type AnimatedRewardTileProps = {
+  src: string
+  label: string
+  isOn: boolean
+}
+
+function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const imageRef = useRef<HTMLImageElement | null>(null)
+  const prevOnRef = useRef<boolean>(isOn)
+  const intervalIdRef = useRef<number | null>(null)
+  const clearTimeoutRef = useRef<number | null>(null)
+
+  const drawChunkyReveal = (ctx: CanvasRenderingContext2D, img: HTMLImageElement) => {
+    const size = 128
+    const chunkSize = 8
+    const cols = size / chunkSize
+    const rows = size / chunkSize
+    const sourceCanvas = document.createElement('canvas')
+    sourceCanvas.width = size
+    sourceCanvas.height = size
+    const sourceCtx = sourceCanvas.getContext('2d')
+    if (!sourceCtx) return
+    sourceCtx.clearRect(0, 0, size, size)
+    sourceCtx.drawImage(img, 0, 0, size, size)
+    const chunks: Array<{ x: number; y: number }> = []
+
+    for (let y = 0; y < rows; y += 1) {
+      for (let x = 0; x < cols; x += 1) {
+        chunks.push({ x, y })
+      }
+    }
+
+    for (let i = chunks.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[chunks[i], chunks[j]] = [chunks[j], chunks[i]]
+    }
+
+    ctx.clearRect(0, 0, size, size)
+
+    let index = 0
+    intervalIdRef.current = window.setInterval(() => {
+      if (index >= chunks.length) {
+        if (intervalIdRef.current) window.clearInterval(intervalIdRef.current)
+        intervalIdRef.current = null
+        return
+      }
+
+      const { x, y } = chunks[index]
+      const sx = x * chunkSize
+      const sy = y * chunkSize
+
+      ctx.drawImage(sourceCanvas, sx, sy, chunkSize, chunkSize, sx, sy, chunkSize, chunkSize)
+      index += 1
+    }, 5)
+  }
+
+  useEffect(() => {
+    const img = new Image()
+    img.src = src
+    img.onload = () => {
+      imageRef.current = img
+      const canvas = canvasRef.current
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      if (isOn) {
+        drawChunkyReveal(ctx, img)
+      } else {
+        ctx.clearRect(0, 0, 128, 128)
+      }
+    }
+  }, [src])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const img = imageRef.current
+    if (!canvas || !img) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    if (intervalIdRef.current) {
+      window.clearInterval(intervalIdRef.current)
+      intervalIdRef.current = null
+    }
+    if (clearTimeoutRef.current) {
+      window.clearTimeout(clearTimeoutRef.current)
+      clearTimeoutRef.current = null
+    }
+
+    if (isOn && !prevOnRef.current) {
+      drawChunkyReveal(ctx, img)
+    } else if (!isOn) {
+      clearTimeoutRef.current = window.setTimeout(() => {
+        ctx.clearRect(0, 0, 128, 128)
+        clearTimeoutRef.current = null
+      }, 700)
+    }
+
+    prevOnRef.current = isOn
+  }, [isOn])
+
+  useEffect(() => {
+    return () => {
+      if (intervalIdRef.current) {
+        window.clearInterval(intervalIdRef.current)
+      }
+      if (clearTimeoutRef.current) {
+        window.clearTimeout(clearTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  return (
+    <figure className={`animal-card ${isOn ? 'animal-card-on' : 'animal-card-off'}`}>
+      <canvas
+        ref={canvasRef}
+        className="animal-canvas"
+        width={128}
+        height={128}
+        aria-label={label}
+      />
+      <div
+        className="animal-silhouette"
+        style={{ ['--animal-url' as any]: `url(${src})` }}
+        aria-hidden
+      />
+    </figure>
+  )
+}
+
+function App() {
+  const unlockSectionRef = useRef<HTMLElement | null>(null)
+  const confettiCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const confettiLauncherRef = useRef<ReturnType<typeof confetti.create> | null>(null)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [activeShot, setActiveShot] = useState(0)
+  const [activeReward, setActiveReward] = useState(0)
+  const shuffledAnimals = useMemo(() => {
+    const copy = [...collectionAnimals]
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[copy[i], copy[j]] = [copy[j], copy[i]]
+    }
+    return copy
+  }, [])
+  const [litAnimalOrder, setLitAnimalOrder] = useState<number[]>([])
+
+  useEffect(() => {
+    const selected: number[] = []
+    while (selected.length < Math.min(3, shuffledAnimals.length)) {
+      const candidate = Math.floor(Math.random() * shuffledAnimals.length)
+      if (!selected.includes(candidate)) selected.push(candidate)
+    }
+    setLitAnimalOrder(selected)
+  }, [shuffledAnimals])
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setLitAnimalOrder((prev) => {
+        if (prev.length === 0) return prev
+        const onSet = new Set(prev)
+        const offIndexes: number[] = []
+
+        for (let i = 0; i < shuffledAnimals.length; i += 1) {
+          if (!onSet.has(i)) offIndexes.push(i)
+        }
+
+        if (offIndexes.length === 0) return prev
+
+        const toTurnOn = offIndexes[Math.floor(Math.random() * offIndexes.length)]
+        const [, ...rest] = prev // oldest turns off
+        return [...rest, toTurnOn]
+      })
+    }, 850)
+
+    return () => window.clearInterval(intervalId)
+  }, [shuffledAnimals])
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveReward((prev) => (prev + 1) % unlockRewardExamples.length)
+    }, 2200)
+    return () => window.clearInterval(intervalId)
+  }, [])
+
+  useEffect(() => {
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const onMotionChange = () => setReducedMotion(motionQuery.matches)
+
+    onMotionChange()
+    motionQuery.addEventListener('change', onMotionChange)
+
+    return () => {
+      motionQuery.removeEventListener('change', onMotionChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!confettiCanvasRef.current) return
+    confettiLauncherRef.current = confetti.create(confettiCanvasRef.current, {
+      resize: true,
+      useWorker: true,
+    })
+  }, [])
+
+  const launchConfetti = () => {
+    if (reducedMotion || !confettiLauncherRef.current) return
+    const shoot = confettiLauncherRef.current
+    const bursts = 8
+
+    for (let i = 0; i < bursts; i += 1) {
+      const delayMs = i * 120
+      const particleCount = 25 + Math.floor(Math.random() * 26)
+      const spread = 55 + Math.random() * 45
+      const startVelocity = 32 + Math.random() * 30
+      const originX = 0.08 + Math.random() * 0.84
+      const originY = 0.02 + Math.random() * 0.25
+      const angle = 65 + Math.random() * 50
+
+      window.setTimeout(() => {
+        shoot({
+          particleCount,
+          spread,
+          startVelocity,
+          gravity: 1.05,
+          scalar: 0.9 + Math.random() * 0.45,
+          drift: -0.8 + Math.random() * 1.6,
+          ticks: 280,
+          angle,
+          origin: { x: originX, y: originY },
+          colors: confettiColors,
+        })
+      }, delayMs)
+    }
+  }
+
+  useEffect(() => {
+    const section = unlockSectionRef.current
+    if (!section) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          launchConfetti()
+        }
+      },
+      { threshold: 0.45 },
+    )
+
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [reducedMotion])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') {
+        setActiveShot((prev) => (prev + 1) % screenshotPaths.length)
+      }
+      if (event.key === 'ArrowLeft') {
+        setActiveShot((prev) => (prev - 1 + screenshotPaths.length) % screenshotPaths.length)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  return (
+    <main className="site">
+      <header className="topbar brutal-card">
+        <p className="brand">
+          <img src="/assets/app_icon.webp" alt="Weight Collector app icon" />
+          <span>Weight Collector</span>
+        </p>
+        <nav className="topbar-store-links">
+          <a className="topbar-store-link" href="https://play.google.com/store" target="_blank" rel="noreferrer">
+            <span className="store-icon" aria-hidden>
+              <img src="/assets/icons/google_play_bw.svg" alt="" />
+            </span>
+            <span>
+              <span className="topbar-store-meta">Get it on</span>
+              <span>Google Play</span>
+            </span>
+          </a>
+          <a className="topbar-store-link" href="https://www.apple.com/app-store/" target="_blank" rel="noreferrer">
+            <span className="store-icon" aria-hidden>
+              <svg viewBox="0 0 24 24" role="img">
+                <path
+                  d="M15.9 12.3c0-2 1.6-2.9 1.7-3-1-1.4-2.5-1.6-3-1.7-1.3-.1-2.4.8-3 .8-.6 0-1.5-.8-2.5-.8-1.3 0-2.5.8-3.2 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.2 2.6 2.1 1-.1 1.4-.6 2.6-.6s1.6.6 2.6.6c1.1 0 1.8-1 2.5-2 .7-1 1-2 1-2.1-.1 0-2.3-.9-2.3-3.2Zm-2-6.1c.6-.8 1-1.9.9-3-.9 0-2.1.6-2.8 1.3-.6.7-1.1 1.8-1 2.9 1 .1 2-.5 2.9-1.2Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            <span>
+              <span className="topbar-store-meta">Download on the</span>
+              <span>App Store</span>
+            </span>
+          </a>
+        </nav>
+      </header>
+
+      <section className="hero brutal-card">
+        <div className="hero-copy">
+          <p className="kicker hero-kicker">TRACK. UNLOCK. COLLECT.</p>
+          <h1>Weight Collector</h1>
+          <h2>Every pound of progress unlocks a reward.</h2>
+          <p className="lead">
+            A bold weight tracker where consistency becomes collectible. Build momentum with visual
+            milestones and celebrate each pound with unlockable items.
+          </p>
+          <div className="hero-store-links">
+            <a className="store-link brutal-inset" href="https://play.google.com/store" target="_blank" rel="noreferrer">
+              <span className="store-icon" aria-hidden>
+                <img src="/assets/icons/google_play_bw.svg" alt="" />
+              </span>
+              <span>Google Play</span>
+            </a>
+            <a className="store-link brutal-inset" href="https://www.apple.com/app-store/" target="_blank" rel="noreferrer">
+              <span className="store-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" role="img">
+                  <path
+                    d="M15.9 12.3c0-2 1.6-2.9 1.7-3-1-1.4-2.5-1.6-3-1.7-1.3-.1-2.4.8-3 .8-.6 0-1.5-.8-2.5-.8-1.3 0-2.5.8-3.2 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.2 2.6 2.1 1-.1 1.4-.6 2.6-.6s1.6.6 2.6.6c1.1 0 1.8-1 2.5-2 .7-1 1-2 1-2.1-.1 0-2.3-.9-2.3-3.2Zm-2-6.1c.6-.8 1-1.9.9-3-.9 0-2.1.6-2.8 1.3-.6.7-1.1 1.8-1 2.9 1 .1 2-.5 2.9-1.2Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span>Apple App Store</span>
+            </a>
+          </div>
+        </div>
+        <aside className="hero-visual brutal-inset">
+          <img src={screenshotPaths[activeShot]} alt={`Main app preview ${activeShot + 1}`} className="hero-screen" />
+          <div className="carousel-controls">
+            <button
+              className="carousel-arrow"
+              type="button"
+              onClick={() => setActiveShot((prev) => (prev - 1 + screenshotPaths.length) % screenshotPaths.length)}
+              aria-label="Previous screenshot"
+            >
+              ←
+            </button>
+            <p className="pixel-caption">Screenshot {activeShot + 1} / {screenshotPaths.length}</p>
+            <button
+              className="carousel-arrow"
+              type="button"
+              onClick={() => setActiveShot((prev) => (prev + 1) % screenshotPaths.length)}
+              aria-label="Next screenshot"
+            >
+              →
+            </button>
+          </div>
+        </aside>
+      </section>
+
+      <section id="features" className="section-block">
+        <p className="kicker">WHY IT WORKS</p>
+        <h2 className="section-title">Big motivation. Tiny daily actions.</h2>
+        <div className="grid-3">
+          {featureCards.map((feature) => (
+            <article className="feature brutal-card" key={feature.title}>
+              <h3>{feature.title}</h3>
+              <p>{feature.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="unlock" className="unlock-section brutal-card" ref={unlockSectionRef}>
+        <canvas className="confetti-canvas" ref={confettiCanvasRef} aria-hidden />
+        <button
+          className="btn unlock-launch-btn"
+          type="button"
+          onClick={() => {
+            launchConfetti()
+          }}
+        >
+          Launch Confetti
+        </button>
+        <div className="unlock-content">
+          <p className="kicker kicker-light">UNLOCK EVENT</p>
+          <h2 className="section-title">Reward Unlocked</h2>
+          <p className="lead">
+            Every pound can pop confetti and add a new collectible to your vault.
+            This is where tracking feels like gameplay.
+          </p>
+          <div className="unlock-card brutal-inset">
+            <div className="unlock-art-frame" aria-hidden>
+              <img
+                className="unlock-art-image"
+                src={unlockRewardExamples[activeReward].src}
+                alt=""
+              />
+              <img className="unlock-art-overlay" src="/assets/pixel_frame.png" alt="" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-block reward-section">
+        <p className="kicker">REWARD COLLECTION</p>
+        <h2 className="section-title">Collect them all!</h2>
+        <div className="animal-grid">
+          {shuffledAnimals.map((animal, index) => (
+            <AnimatedRewardTile
+              key={animal.src}
+              src={animal.src}
+              label={animal.label}
+              isOn={litAnimalOrder.includes(index)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <footer id="stores" className="footer-panel brutal-card">
+        <div className="footer-grid">
+          <div>
+            <p className="kicker">WEIGHT COLLECTOR</p>
+            <h2 className="section-title">Built for momentum, designed like a game.</h2>
+            <p className="stores-lead">
+              Track progress, unlock rewards, and keep your streak alive. Download links are in the top section.
+            </p>
+          </div>
+          <div className="footer-links">
+            <a href="mailto:your@email.com">Email Me</a>
+            <a href="https://x.com/yourhandle" target="_blank" rel="noreferrer">Message on X</a>
+            <a href="https://www.linkedin.com/in/yourhandle/" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href="https://calendly.com/yourhandle" target="_blank" rel="noreferrer">Book a Call</a>
+          </div>
+        </div>
+        <p className="footer-note">2026 Weight Collector. All rights reserved.</p>
+      </footer>
+    </main>
+  )
+}
+
+export default App
