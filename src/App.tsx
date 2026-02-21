@@ -108,14 +108,14 @@ const rewardCollections: RewardCollection[] = [
   },
 ]
 
-const unlockRewardExamples = [
-  { src: '/assets/animals/animal_12lb.png' },
-  { src: '/assets/animals/animal_22lb.png' },
-  { src: '/assets/animals/animal_40lb.png' },
-  { src: '/assets/animals/animal_57lb.png' },
-  { src: '/assets/animals/animal_75lb.png' },
-  { src: '/assets/animals/animal_91lb.png' },
-]
+const unlockRewardExamples = Array.from({ length: 24 }, () => {
+  const collection = rewardCollections[Math.floor(Math.random() * rewardCollections.length)]
+  const item = collection.items[Math.floor(Math.random() * collection.items.length)]
+  return {
+    src: item.src,
+    isClay: collection.silhouetteMode === 'image',
+  }
+})
 
 const confettiColors = ['#FFEB3B', '#FF4081', '#2196F3', '#4CAF50', '#F44336', '#FFFFFF']
 
@@ -402,7 +402,7 @@ function App() {
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setActiveReward((prev) => (prev + 1) % unlockRewardExamples.length)
-    }, 2200)
+    }, 750)
     return () => window.clearInterval(intervalId)
   }, [])
 
@@ -613,7 +613,11 @@ function App() {
                 src={unlockRewardExamples[activeReward].src}
                 alt=""
               />
-              <img className="unlock-art-overlay" src="/assets/pixel_frame.png" alt="" />
+              <img
+                className="unlock-art-overlay"
+                src={unlockRewardExamples[activeReward].isClay ? '/assets/clay_frame.png' : '/assets/pixel_frame.png'}
+                alt=""
+              />
             </div>
           </div>
         </div>
