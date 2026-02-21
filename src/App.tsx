@@ -2,9 +2,38 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
 
 const featureCards = [
-  { title: 'One-Pound Rewards', body: 'Every pound of progress unlocks a new collectible reward in your set.' },
-  { title: 'Motivation You Can See', body: 'Swap visual collections to keep your journey fresh, playful, and sticky.' },
-  { title: 'Fast Tracking Loop', body: 'Manual logging plus Health Connect sync means less friction, more momentum.' },
+  {
+    title: 'One-Pound Rewards',
+    body: 'Every pound of progress unlocks a new collectible reward in your set.',
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+        <polyline points="20 12 20 22 4 22 4 12"></polyline>
+        <rect x="2" y="7" width="20" height="5"></rect>
+        <line x1="12" y1="22" x2="12" y2="7"></line>
+        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+      </svg>
+    )
+  },
+  {
+    title: 'Motivation You Can See',
+    body: 'Swap visual collections to keep your journey fresh, playful, and sticky.',
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    )
+  },
+  {
+    title: 'Fast Tracking Loop',
+    body: 'Manual logging plus Health Connect sync means less friction, more momentum.',
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+    )
+  },
 ]
 
 const screenshotPaths = [
@@ -606,6 +635,7 @@ function App() {
         <div className="grid-3">
           {featureCards.map((feature) => (
             <article className="feature brutal-card" key={feature.title}>
+              <div className="feature-icon" aria-hidden>{feature.icon}</div>
               <h3>{feature.title}</h3>
               <p>{feature.body}</p>
             </article>

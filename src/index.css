@@ -353,6 +353,23 @@ a {
   background: #cbe6ff;
 }
 
+.feature-icon {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--white);
+  border: 3px solid var(--black);
+  box-shadow: 4px 4px 0 var(--black);
+}
+
+.feature-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
 .feature h3 {
   margin: 0 0 8px;
   font-size: 0.95rem;
