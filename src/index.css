@@ -427,17 +427,17 @@ a {
 }
 
 .unlock-art-frame {
-  width: 300px;
-  height: 300px;
+  width: 450px;
+  height: 450px;
   position: relative;
   background: #ffffff;
 }
 
 .unlock-art-image {
   position: absolute;
-  inset: 36px;
-  width: calc(100% - 72px);
-  height: calc(100% - 72px);
+  inset: 54px;
+  width: calc(100% - 108px);
+  height: calc(100% - 108px);
   object-fit: contain;
   image-rendering: pixelated;
   background: #ffffff;
@@ -818,6 +818,11 @@ a {
   .collection-track-head {
     flex-wrap: wrap;
   }
+
+  .unlock-art-frame {
+    width: 320px;
+    height: 320px;
+  }
 }
 
 @media (max-width: 460px) {
@@ -851,6 +856,11 @@ a {
 
   .unlock-content {
     margin-top: 0;
+  }
+
+  .unlock-art-frame {
+    width: 280px;
+    height: 280px;
   }
 
   .hero-screen {

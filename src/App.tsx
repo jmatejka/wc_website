@@ -402,7 +402,7 @@ function App() {
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setActiveReward((prev) => (prev + 1) % unlockRewardExamples.length)
-    }, 750)
+    }, 250)
     return () => window.clearInterval(intervalId)
   }, [])
 
