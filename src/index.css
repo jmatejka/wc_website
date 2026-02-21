@@ -435,9 +435,10 @@ a {
 
 .unlock-art-image {
   position: absolute;
-  inset: 54px;
-  width: calc(100% - 108px);
-  height: calc(100% - 108px);
+  inset: 0;
+  width: 50.6%;
+  height: 50.6%;
+  margin: auto;
   object-fit: contain;
   image-rendering: pixelated;
   background: #ffffff;

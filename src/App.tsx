@@ -399,12 +399,30 @@ function App() {
   const [activeShot, setActiveShot] = useState(0)
   const [activeReward, setActiveReward] = useState(0)
 
+  const launchRewardConfetti = () => {
+    if (reducedMotion || !confettiLauncherRef.current) return
+    const shoot = confettiLauncherRef.current
+    shoot({
+      particleCount: 50,
+      spread: 60,
+      startVelocity: 40,
+      gravity: 1.05,
+      scalar: 1.0,
+      origin: { x: 0.5, y: 0.65 },
+      colors: confettiColors,
+      zIndex: 0
+    })
+  }
+
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      setActiveReward((prev) => (prev + 1) % unlockRewardExamples.length)
-    }, 250)
+      setActiveReward((prev) => {
+        setTimeout(launchRewardConfetti, 50)
+        return (prev + 1) % unlockRewardExamples.length
+      })
+    }, 2000)
     return () => window.clearInterval(intervalId)
-  }, [])
+  }, [reducedMotion])
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
