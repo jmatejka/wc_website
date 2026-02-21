@@ -636,8 +636,10 @@ function App() {
           {featureCards.map((feature) => (
             <article className="feature brutal-card" key={feature.title}>
               <div className="feature-icon" aria-hidden>{feature.icon}</div>
-              <h3>{feature.title}</h3>
-              <p>{feature.body}</p>
+              <div className="feature-content">
+                <h3>{feature.title}</h3>
+                <p>{feature.body}</p>
+              </div>
             </article>
           ))}
         </div>
