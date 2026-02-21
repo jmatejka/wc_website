@@ -173,9 +173,9 @@ a {
   background-image: repeating-linear-gradient(
     -45deg,
     var(--yellow),
-    var(--yellow) 24px,
-    #ffe400 24px,
-    #ffe400 48px
+    var(--yellow) 60px,
+    #ffe400 60px,
+    #ffe400 120px
   );
 }
 
@@ -491,25 +491,7 @@ a {
   z-index: 2;
 }
 
-.animal-silhouette {
-  width: var(--tile-size, 64px);
-  height: var(--tile-size, 64px);
-  background-color: #cccccc;
-  -webkit-mask-image: var(--animal-url);
-  mask-image: var(--animal-url);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  position: absolute;
-  inset: 0;
-  opacity: 1;
-  z-index: 1;
-}
-
-.animal-image-silhouette {
+.animal-base-image {
   width: var(--tile-size, 64px);
   height: var(--tile-size, 64px);
   position: absolute;
@@ -518,32 +500,19 @@ a {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  filter: grayscale(1) brightness(0.76) contrast(0.6);
-  opacity: 1;
+  opacity: 0.2;
 }
 
 .animal-card-off .animal-canvas {
   opacity: 0;
 }
 
-.animal-card-off .animal-silhouette {
-  opacity: 1;
-}
-
 .animal-card-on .animal-canvas {
   opacity: 1;
 }
 
-.animal-card-on .animal-silhouette {
-  opacity: 1;
-}
-
-.animal-card-on .animal-image-silhouette {
-  opacity: 1;
-}
-
 .animal-card-pixel .animal-canvas,
-.animal-card-pixel .animal-silhouette {
+.animal-card-pixel .animal-base-image {
   transform: scale(1.15);
 }
 

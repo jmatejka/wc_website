@@ -254,19 +254,11 @@ function AnimatedRewardTile({ src, label, isOn, size, silhouetteMode }: Animated
         height={size}
         aria-label={label}
       />
-      {silhouetteMode === 'mask' ? (
-        <div
-          className="animal-silhouette"
-          style={{ ['--animal-url' as any]: `url(${resolvedSrc})` }}
-          aria-hidden
-        />
-      ) : (
-        <div
-          className="animal-image-silhouette"
-          style={{ backgroundImage: `url(${resolvedSrc})` }}
-          aria-hidden
-        />
-      )}
+      <div
+        className="animal-base-image"
+        style={{ backgroundImage: `url(${resolvedSrc})` }}
+        aria-hidden
+      />
     </figure>
   )
 }
