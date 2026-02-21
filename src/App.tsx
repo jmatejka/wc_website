@@ -32,7 +32,7 @@ type RewardCollection = {
 }
 
 const ROW_LIT_COUNT = 3
-const COLLECTION_ROWS = 2
+const COLLECTION_ROWS = 1
 
 const buildLbCollection = (
   folder: string,
@@ -279,8 +279,26 @@ type CollectionRowProps = {
   tileSize: number
 }
 
+function LockGlyph({ open }: { open: boolean }) {
+  return open ? (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M12 3a5 5 0 0 0-5 5v1h2V8a3 3 0 1 1 6 0v2H8v11h11V10h-2v1H10v8h7v-8h-2v-1h-3a2.5 2.5 0 0 0-1 4.79V17h2v-2.21A2.5 2.5 0 0 0 12 10Z"
+        fill="currentColor"
+      />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M7 10V8a5 5 0 1 1 10 0v2h-2V8a3 3 0 1 0-6 0v2H7Zm-2 1h14v10H5V11Zm7 2a2.5 2.5 0 0 0-1 4.79V19h2v-1.21A2.5 2.5 0 0 0 12 13Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
 function CollectionRow({ title, ribbon, included, items, silhouetteMode, tileSize }: CollectionRowProps) {
-  const gridRef = useRef<HTMLDivElement | null>(null)
+  const trackRef = useRef<HTMLElement | null>(null)
   const [columns, setColumns] = useState(12)
   const shuffledItems = useMemo(() => {
     const copy = [...items]
@@ -295,17 +313,19 @@ function CollectionRow({ title, ribbon, included, items, silhouetteMode, tileSiz
   const [litOrder, setLitOrder] = useState<number[]>([])
 
   useEffect(() => {
-    const grid = gridRef.current
-    if (!grid) return
+    const track = trackRef.current
+    if (!track) return
     const gap = 4
     const updateColumns = () => {
-      const width = grid.clientWidth
-      const next = Math.max(1, Math.floor((width + gap) / (tileSize + gap)))
+      // Use track width but leave room for the scrollbar/padding.
+      const width = track.clientWidth - 20
+      const next = Math.max(1, Math.floor((Math.max(0, width) + gap) / (tileSize + gap)))
       setColumns(next)
     }
     updateColumns()
+    // Using a ResizeObserver on the window since the track size is constrained by the window.
     const observer = new ResizeObserver(() => updateColumns())
-    observer.observe(grid)
+    observer.observe(document.body)
     return () => observer.disconnect()
   }, [tileSize])
 
@@ -342,16 +362,17 @@ function CollectionRow({ title, ribbon, included, items, silhouetteMode, tileSiz
   const moreCount = Math.max(0, items.length - visibleCount)
 
   return (
-    <section className="collection-track">
+    <section ref={trackRef} className="collection-track">
       <div className="collection-track-head">
         <div className={`locked-ribbon ${included ? 'locked-ribbon-included' : ''}`}>
-          <span className="ribbon-icon" aria-hidden>{included ? '🔓' : '🔒'}</span>
+          <span className="ribbon-icon" aria-hidden>
+            <LockGlyph open={Boolean(included)} />
+          </span>
           <span>{ribbon}</span>
         </div>
         <span className="collection-more">+ {moreCount} more</span>
       </div>
       <div
-        ref={gridRef}
         className="collection-grid"
         style={{ ['--tile-size' as any]: `${tileSize}px`, ['--collection-columns' as any]: columns }}
       >
@@ -610,7 +631,7 @@ function App() {
               included={collection.included}
               items={collection.items}
               silhouetteMode={collection.silhouetteMode}
-              tileSize={86}
+              tileSize={128}
             />
           ))}
         </div>
