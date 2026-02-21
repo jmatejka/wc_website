@@ -245,7 +245,7 @@ function AnimatedRewardTile({ src, label, isOn, size, silhouetteMode }: Animated
   }, [])
 
   return (
-    <figure className={`animal-card ${isOn ? 'animal-card-on' : 'animal-card-off'}`}>
+    <figure className={`animal-card ${isOn ? 'animal-card-on' : 'animal-card-off'} ${silhouetteMode === 'mask' ? 'animal-card-pixel' : ''}`}>
       <canvas
         ref={canvasRef}
         className="animal-canvas"
