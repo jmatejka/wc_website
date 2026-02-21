@@ -39,14 +39,18 @@ const buildLbCollection = (
   prefix: string,
   extension: 'png' | 'jpg',
   labelPrefix: string,
+  excludeIndices: number[] = [],
 ): RewardItem[] =>
-  Array.from({ length: 100 }, (_, index) => {
-    const lbs = index + 1
-    return {
+  Array.from({ length: 100 }, (_, index) => index + 1)
+    .filter((lbs) => !excludeIndices.includes(lbs))
+    .map((lbs) => ({
       src: `/assets/collections/${folder}/${prefix}${lbs}lb.${extension}`,
       label: `${labelPrefix} ${lbs} lb`,
-    }
-  })
+    }))
+
+const excludedInstruments = [
+  18, 27, 34, 38, 44, 47, 49, 52, 54, 55, 56, 59, 60, 61, 64, 65, 68, 70, 73, 75, 76, 81, 83, 86, 87, 91, 92, 95, 98
+]
 
 const rewardCollections: RewardCollection[] = [
   {
@@ -75,35 +79,35 @@ const rewardCollections: RewardCollection[] = [
     id: 'pixel_instruments',
     title: 'Pixel Instruments',
     ribbon: 'Unlockable - Pixel Instruments',
-    items: buildLbCollection('pixel_instruments', 'instrument_', 'png', 'Pixel instrument'),
+    items: buildLbCollection('pixel_instruments', 'instrument_', 'png', 'Pixel instrument', excludedInstruments),
     silhouetteMode: 'mask',
   },
   {
     id: 'clay_animals',
-    title: 'Claymation Animals',
-    ribbon: 'Unlockable - Claymation Animals',
+    title: 'Clay Animals',
+    ribbon: 'Unlockable - Clay Animals',
     items: buildLbCollection('clay_animals', 'clay_animal_', 'jpg', 'Clay animal'),
     silhouetteMode: 'image',
   },
   {
     id: 'clay_dogs',
-    title: 'Claymation Dogs',
-    ribbon: 'Unlockable - Claymation Dogs',
+    title: 'Clay Dogs',
+    ribbon: 'Unlockable - Clay Dogs',
     items: buildLbCollection('clay_dogs', 'clay_dog_', 'jpg', 'Clay dog'),
     silhouetteMode: 'image',
   },
   {
     id: 'clay_objects',
-    title: 'Claymation Objects',
-    ribbon: 'Unlockable - Claymation Objects',
+    title: 'Clay Objects',
+    ribbon: 'Unlockable - Clay Objects',
     items: buildLbCollection('clay_objects', 'clay_object_', 'jpg', 'Clay object'),
     silhouetteMode: 'image',
   },
   {
     id: 'clay_instruments',
-    title: 'Claymation Instruments',
-    ribbon: 'Unlockable - Claymation Instruments',
-    items: buildLbCollection('clay_instruments', 'clay_instrument_', 'jpg', 'Clay instrument'),
+    title: 'Clay Instruments',
+    ribbon: 'Unlockable - Clay Instruments',
+    items: buildLbCollection('clay_instruments', 'clay_instrument_', 'jpg', 'Clay instrument', excludedInstruments),
     silhouetteMode: 'image',
   },
 ]
