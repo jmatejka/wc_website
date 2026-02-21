@@ -26,12 +26,13 @@ type RewardCollection = {
   id: string
   title: string
   ribbon: string
+  included?: boolean
   items: RewardItem[]
   silhouetteMode: SilhouetteMode
 }
 
-const ROW_SAMPLE_COUNT = 32
 const ROW_LIT_COUNT = 3
+const COLLECTION_ROWS = 2
 
 const buildLbCollection = (
   folder: string,
@@ -51,56 +52,57 @@ const rewardCollections: RewardCollection[] = [
   {
     id: 'pixel_animals',
     title: 'Pixel Animals',
-    ribbon: 'Active Collection',
+    ribbon: 'INCLUDED - pixel animals',
+    included: true,
     items: buildLbCollection('pixel_animals', 'animal_', 'png', 'Pixel animal'),
     silhouetteMode: 'mask',
   },
   {
-    id: 'clay_animals',
-    title: 'Clay Animals',
-    ribbon: 'Unlockable',
-    items: buildLbCollection('clay_animals', 'clay_animal_', 'jpg', 'Clay animal'),
-    silhouetteMode: 'image',
-  },
-  {
     id: 'pixel_dogs',
     title: 'Pixel Dogs',
-    ribbon: 'Unlockable',
+    ribbon: 'Unlockable - Pixel Dogs',
     items: buildLbCollection('pixel_dogs', 'dog_', 'png', 'Pixel dog'),
     silhouetteMode: 'mask',
   },
   {
-    id: 'clay_dogs',
-    title: 'Clay Dogs',
-    ribbon: 'Unlockable',
-    items: buildLbCollection('clay_dogs', 'clay_dog_', 'jpg', 'Clay dog'),
-    silhouetteMode: 'image',
-  },
-  {
     id: 'pixel_objects',
     title: 'Pixel Objects',
-    ribbon: 'Unlockable',
+    ribbon: 'Unlockable - Pixel Objects',
     items: buildLbCollection('pixel_objects', 'object_', 'png', 'Pixel object'),
     silhouetteMode: 'mask',
   },
   {
-    id: 'clay_objects',
-    title: 'Clay Objects',
-    ribbon: 'Unlockable',
-    items: buildLbCollection('clay_objects', 'clay_object_', 'jpg', 'Clay object'),
-    silhouetteMode: 'image',
-  },
-  {
     id: 'pixel_instruments',
     title: 'Pixel Instruments',
-    ribbon: 'Unlockable',
+    ribbon: 'Unlockable - Pixel Instruments',
     items: buildLbCollection('pixel_instruments', 'instrument_', 'png', 'Pixel instrument'),
     silhouetteMode: 'mask',
   },
   {
+    id: 'clay_animals',
+    title: 'Claymation Animals',
+    ribbon: 'Unlockable - Claymation Animals',
+    items: buildLbCollection('clay_animals', 'clay_animal_', 'jpg', 'Clay animal'),
+    silhouetteMode: 'image',
+  },
+  {
+    id: 'clay_dogs',
+    title: 'Claymation Dogs',
+    ribbon: 'Unlockable - Claymation Dogs',
+    items: buildLbCollection('clay_dogs', 'clay_dog_', 'jpg', 'Clay dog'),
+    silhouetteMode: 'image',
+  },
+  {
+    id: 'clay_objects',
+    title: 'Claymation Objects',
+    ribbon: 'Unlockable - Claymation Objects',
+    items: buildLbCollection('clay_objects', 'clay_object_', 'jpg', 'Clay object'),
+    silhouetteMode: 'image',
+  },
+  {
     id: 'clay_instruments',
-    title: 'Clay Instruments',
-    ribbon: 'Unlockable',
+    title: 'Claymation Instruments',
+    ribbon: 'Unlockable - Claymation Instruments',
     items: buildLbCollection('clay_instruments', 'clay_instrument_', 'jpg', 'Clay instrument'),
     silhouetteMode: 'image',
   },
@@ -271,21 +273,41 @@ function AnimatedRewardTile({ src, label, isOn, size, silhouetteMode }: Animated
 type CollectionRowProps = {
   title: string
   ribbon: string
+  included?: boolean
   items: RewardItem[]
   silhouetteMode: SilhouetteMode
   tileSize: number
 }
 
-function CollectionRow({ title, ribbon, items, silhouetteMode, tileSize }: CollectionRowProps) {
-  const sampledItems = useMemo(() => {
+function CollectionRow({ title, ribbon, included, items, silhouetteMode, tileSize }: CollectionRowProps) {
+  const gridRef = useRef<HTMLDivElement | null>(null)
+  const [columns, setColumns] = useState(12)
+  const shuffledItems = useMemo(() => {
     const copy = [...items]
     for (let i = copy.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[copy[i], copy[j]] = [copy[j], copy[i]]
     }
-    return copy.slice(0, Math.min(ROW_SAMPLE_COUNT, copy.length))
+    return copy
   }, [items])
+  const visibleCount = Math.min(shuffledItems.length, Math.max(1, columns) * COLLECTION_ROWS)
+  const sampledItems = useMemo(() => shuffledItems.slice(0, visibleCount), [shuffledItems, visibleCount])
   const [litOrder, setLitOrder] = useState<number[]>([])
+
+  useEffect(() => {
+    const grid = gridRef.current
+    if (!grid) return
+    const gap = 4
+    const updateColumns = () => {
+      const width = grid.clientWidth
+      const next = Math.max(1, Math.floor((width + gap) / (tileSize + gap)))
+      setColumns(next)
+    }
+    updateColumns()
+    const observer = new ResizeObserver(() => updateColumns())
+    observer.observe(grid)
+    return () => observer.disconnect()
+  }, [tileSize])
 
   useEffect(() => {
     const selected: number[] = []
@@ -317,18 +339,25 @@ function CollectionRow({ title, ribbon, items, silhouetteMode, tileSize }: Colle
     return () => window.clearInterval(intervalId)
   }, [sampledItems])
 
-  const moreCount = Math.max(0, items.length - sampledItems.length)
+  const moreCount = Math.max(0, items.length - visibleCount)
 
   return (
     <section className="collection-track">
       <div className="collection-track-head">
-        <div className="locked-ribbon">{ribbon} - {title}</div>
+        <div className={`locked-ribbon ${included ? 'locked-ribbon-included' : ''}`}>
+          <span className="ribbon-icon" aria-hidden>{included ? '🔓' : '🔒'}</span>
+          <span>{ribbon}</span>
+        </div>
         <span className="collection-more">+ {moreCount} more</span>
       </div>
-      <div className="collection-grid" style={{ ['--tile-size' as any]: `${tileSize}px` }}>
+      <div
+        ref={gridRef}
+        className="collection-grid"
+        style={{ ['--tile-size' as any]: `${tileSize}px`, ['--collection-columns' as any]: columns }}
+      >
         {sampledItems.map((item, index) => (
           <AnimatedRewardTile
-            key={`${title}-${item.src}`}
+            key={`${title}-${item.src}-${index}`}
             src={item.src}
             label={item.label}
             isOn={litOrder.includes(index)}
@@ -578,9 +607,10 @@ function App() {
               key={collection.id}
               title={collection.title}
               ribbon={collection.ribbon}
+              included={collection.included}
               items={collection.items}
               silhouetteMode={collection.silhouetteMode}
-              tileSize={64}
+              tileSize={86}
             />
           ))}
         </div>

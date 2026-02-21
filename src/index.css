@@ -553,7 +553,9 @@ a {
 }
 
 .locked-ribbon {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px 8px;
   border: 2px solid var(--black);
   background: var(--pink);
@@ -563,6 +565,16 @@ a {
   text-transform: uppercase;
 }
 
+.ribbon-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.locked-ribbon-included {
+  background: var(--green);
+  color: var(--white);
+}
+
 .collection-more {
   font-size: 12px;
   line-height: 12px;
@@ -570,9 +582,10 @@ a {
 }
 
 .collection-grid {
-  --tile-size: 64px;
+  --tile-size: 86px;
+  --collection-columns: 12;
   display: grid;
-  grid-template-columns: repeat(16, var(--tile-size));
+  grid-template-columns: repeat(var(--collection-columns), var(--tile-size));
   gap: 4px;
   justify-content: center;
 }
@@ -739,7 +752,7 @@ a {
   }
 
   .collection-grid {
-    grid-template-columns: repeat(8, var(--tile-size));
+    --tile-size: 74px;
   }
 
   .unlock-section {
@@ -787,8 +800,7 @@ a {
   }
 
   .collection-grid {
-    --tile-size: 56px;
-    grid-template-columns: repeat(6, var(--tile-size));
+    --tile-size: 62px;
   }
 }
 
@@ -836,8 +848,7 @@ a {
   }
 
   .collection-grid {
-    --tile-size: 48px;
-    grid-template-columns: repeat(4, var(--tile-size));
+    --tile-size: 52px;
   }
 }
 
