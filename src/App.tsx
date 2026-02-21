@@ -109,11 +109,12 @@ const rewardCollections: RewardCollection[] = [
 ]
 
 const unlockRewardExamples = Array.from({ length: 24 }, () => {
-  const collection = rewardCollections[Math.floor(Math.random() * rewardCollections.length)]
+  const pixelCollections = rewardCollections.filter(c => c.silhouetteMode === 'mask')
+  const collection = pixelCollections[Math.floor(Math.random() * pixelCollections.length)]
   const item = collection.items[Math.floor(Math.random() * collection.items.length)]
   return {
     src: item.src,
-    isClay: collection.silhouetteMode === 'image',
+    isClay: false,
   }
 })
 
@@ -403,26 +404,36 @@ function App() {
     if (reducedMotion || !confettiLauncherRef.current) return
     const shoot = confettiLauncherRef.current
     shoot({
-      particleCount: 50,
-      spread: 60,
-      startVelocity: 40,
-      gravity: 1.05,
-      scalar: 1.0,
+      particleCount: 40,
+      spread: 70,
+      startVelocity: 35,
+      gravity: 1.1,
+      scalar: 0.9,
       origin: { x: 0.5, y: 0.65 },
       colors: confettiColors,
-      zIndex: 0
+      zIndex: 10
     })
   }
 
   useEffect(() => {
+    // Preload the images to ensure instant rendering when cycling
+    unlockRewardExamples.forEach(ex => {
+      const img = new Image()
+      img.src = ex.src
+    })
+
     const intervalId = window.setInterval(() => {
-      setActiveReward((prev) => {
-        setTimeout(launchRewardConfetti, 50)
-        return (prev + 1) % unlockRewardExamples.length
-      })
-    }, 2000)
+      setActiveReward((prev) => (prev + 1) % unlockRewardExamples.length)
+    }, 1500)
     return () => window.clearInterval(intervalId)
-  }, [reducedMotion])
+  }, [])
+
+  useEffect(() => {
+    // Skip firing on the initial mount, but fire on every subsequent cycle
+    if (activeReward !== 0) {
+      launchRewardConfetti()
+    }
+  }, [activeReward, reducedMotion])
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
