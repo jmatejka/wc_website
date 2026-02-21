@@ -464,14 +464,14 @@ a {
   background: transparent;
   border: 0;
   box-shadow: none;
-  width: 128px;
-  height: 128px;
+  width: var(--tile-size, 64px);
+  height: var(--tile-size, 64px);
   position: relative;
 }
 
 .animal-canvas {
-  width: 128px;
-  height: 128px;
+  width: var(--tile-size, 64px);
+  height: var(--tile-size, 64px);
   image-rendering: pixelated;
   background: transparent;
   border: 0;
@@ -483,8 +483,8 @@ a {
 }
 
 .animal-silhouette {
-  width: 128px;
-  height: 128px;
+  width: var(--tile-size, 64px);
+  height: var(--tile-size, 64px);
   background-color: #cccccc;
   -webkit-mask-image: var(--animal-url);
   mask-image: var(--animal-url);
@@ -498,6 +498,19 @@ a {
   inset: 0;
   opacity: 1;
   z-index: 1;
+}
+
+.animal-image-silhouette {
+  width: var(--tile-size, 64px);
+  height: var(--tile-size, 64px);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: grayscale(1) brightness(0.76) contrast(0.6);
+  opacity: 1;
 }
 
 .animal-card-off .animal-canvas {
@@ -516,20 +529,31 @@ a {
   opacity: 1;
 }
 
+.animal-card-on .animal-image-silhouette {
+  opacity: 1;
+}
+
 .locked-collections {
   display: grid;
   gap: 14px;
 }
 
-.locked-track {
+.collection-track {
   border: 2px solid var(--black);
   background: #f7f7f7;
   padding: 10px;
 }
 
+.collection-track-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .locked-ribbon {
   display: inline-block;
-  margin-bottom: 8px;
   padding: 4px 8px;
   border: 2px solid var(--black);
   background: var(--pink);
@@ -539,20 +563,18 @@ a {
   text-transform: uppercase;
 }
 
-.locked-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 64px);
-  gap: 4px;
-  justify-content: center;
+.collection-more {
+  font-size: 12px;
+  line-height: 12px;
+  text-transform: uppercase;
 }
 
-.locked-grid img {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  image-rendering: pixelated;
-  filter: grayscale(1) brightness(0.82) contrast(1.05);
-  opacity: 0.9;
+.collection-grid {
+  --tile-size: 64px;
+  display: grid;
+  grid-template-columns: repeat(16, var(--tile-size));
+  gap: 4px;
+  justify-content: center;
 }
 
 .screenshot-grid {
@@ -716,8 +738,8 @@ a {
     grid-template-columns: repeat(auto-fill, minmax(96px, 96px));
   }
 
-  .locked-grid {
-    grid-template-columns: repeat(8, 64px);
+  .collection-grid {
+    grid-template-columns: repeat(8, var(--tile-size));
   }
 
   .unlock-section {
@@ -764,13 +786,9 @@ a {
     grid-template-columns: repeat(auto-fill, minmax(80px, 80px));
   }
 
-  .locked-grid {
-    grid-template-columns: repeat(6, 56px);
-  }
-
-  .locked-grid img {
-    width: 56px;
-    height: 56px;
+  .collection-grid {
+    --tile-size: 56px;
+    grid-template-columns: repeat(6, var(--tile-size));
   }
 }
 
@@ -817,13 +835,9 @@ a {
     grid-template-columns: repeat(auto-fill, minmax(64px, 64px));
   }
 
-  .locked-grid {
-    grid-template-columns: repeat(4, 48px);
-  }
-
-  .locked-grid img {
-    width: 48px;
-    height: 48px;
+  .collection-grid {
+    --tile-size: 48px;
+    grid-template-columns: repeat(4, var(--tile-size));
   }
 }
 

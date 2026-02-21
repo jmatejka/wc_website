@@ -15,25 +15,96 @@ const screenshotPaths = [
   '/assets/screenshots_half/Screenshot_20260220_182525.png',
 ]
 
-const collectionAnimals = Array.from({ length: 60 }, (_, index) => {
-  const lbs = index + 1
-  return { src: `/assets/animals/animal_${lbs}lb.png`, label: `${lbs} lb reward` }
-})
+type SilhouetteMode = 'mask' | 'image'
 
-const lockedClayAnimals = Array.from({ length: 24 }, (_, index) => {
-  const lbs = index + 1
-  return { src: `/assets/locked/clay_animals/clay_animal_${lbs}lb.jpg`, label: `Clay animal ${lbs} lb` }
-})
+type RewardItem = {
+  src: string
+  label: string
+}
 
-const lockedPixelObjects = Array.from({ length: 24 }, (_, index) => {
-  const lbs = index + 1
-  return { src: `/assets/locked/pixel_objects/object_${lbs}lb.png`, label: `Pixel object ${lbs} lb` }
-})
+type RewardCollection = {
+  id: string
+  title: string
+  ribbon: string
+  items: RewardItem[]
+  silhouetteMode: SilhouetteMode
+}
 
-const lockedClayObjects = Array.from({ length: 24 }, (_, index) => {
-  const lbs = index + 1
-  return { src: `/assets/locked/clay_objects/clay_object_${lbs}lb.jpg`, label: `Clay object ${lbs} lb` }
-})
+const ROW_SAMPLE_COUNT = 32
+const ROW_LIT_COUNT = 3
+
+const buildLbCollection = (
+  folder: string,
+  prefix: string,
+  extension: 'png' | 'jpg',
+  labelPrefix: string,
+): RewardItem[] =>
+  Array.from({ length: 100 }, (_, index) => {
+    const lbs = index + 1
+    return {
+      src: `/assets/collections/${folder}/${prefix}${lbs}lb.${extension}`,
+      label: `${labelPrefix} ${lbs} lb`,
+    }
+  })
+
+const rewardCollections: RewardCollection[] = [
+  {
+    id: 'pixel_animals',
+    title: 'Pixel Animals',
+    ribbon: 'Active Collection',
+    items: buildLbCollection('pixel_animals', 'animal_', 'png', 'Pixel animal'),
+    silhouetteMode: 'mask',
+  },
+  {
+    id: 'clay_animals',
+    title: 'Clay Animals',
+    ribbon: 'Unlockable',
+    items: buildLbCollection('clay_animals', 'clay_animal_', 'jpg', 'Clay animal'),
+    silhouetteMode: 'image',
+  },
+  {
+    id: 'pixel_dogs',
+    title: 'Pixel Dogs',
+    ribbon: 'Unlockable',
+    items: buildLbCollection('pixel_dogs', 'dog_', 'png', 'Pixel dog'),
+    silhouetteMode: 'mask',
+  },
+  {
+    id: 'clay_dogs',
+    title: 'Clay Dogs',
+    ribbon: 'Unlockable',
+    items: buildLbCollection('clay_dogs', 'clay_dog_', 'jpg', 'Clay dog'),
+    silhouetteMode: 'image',
+  },
+  {
+    id: 'pixel_objects',
+    title: 'Pixel Objects',
+    ribbon: 'Unlockable',
+    items: buildLbCollection('pixel_objects', 'object_', 'png', 'Pixel object'),
+    silhouetteMode: 'mask',
+  },
+  {
+    id: 'clay_objects',
+    title: 'Clay Objects',
+    ribbon: 'Unlockable',
+    items: buildLbCollection('clay_objects', 'clay_object_', 'jpg', 'Clay object'),
+    silhouetteMode: 'image',
+  },
+  {
+    id: 'pixel_instruments',
+    title: 'Pixel Instruments',
+    ribbon: 'Unlockable',
+    items: buildLbCollection('pixel_instruments', 'instrument_', 'png', 'Pixel instrument'),
+    silhouetteMode: 'mask',
+  },
+  {
+    id: 'clay_instruments',
+    title: 'Clay Instruments',
+    ribbon: 'Unlockable',
+    items: buildLbCollection('clay_instruments', 'clay_instrument_', 'jpg', 'Clay instrument'),
+    silhouetteMode: 'image',
+  },
+]
 
 const unlockRewardExamples = [
   { src: '/assets/animals/animal_12lb.png' },
@@ -50,10 +121,12 @@ type AnimatedRewardTileProps = {
   src: string
   label: string
   isOn: boolean
+  size: number
+  silhouetteMode: SilhouetteMode
 }
 
-function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
-  const fallbackSrc = '/assets/animals/animal_1lb.png'
+function AnimatedRewardTile({ src, label, isOn, size, silhouetteMode }: AnimatedRewardTileProps) {
+  const fallbackSrc = '/assets/collections/pixel_animals/animal_1lb.png'
   const [resolvedSrc, setResolvedSrc] = useState(src)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
@@ -62,10 +135,9 @@ function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
   const clearTimeoutRef = useRef<number | null>(null)
 
   const drawChunkyReveal = (ctx: CanvasRenderingContext2D, img: HTMLImageElement) => {
-    const size = 128
-    const chunkSize = 8
-    const cols = size / chunkSize
-    const rows = size / chunkSize
+    const chunkSize = Math.max(2, Math.floor(size / 16))
+    const cols = Math.floor(size / chunkSize)
+    const rows = Math.floor(size / chunkSize)
     const sourceCanvas = document.createElement('canvas')
     sourceCanvas.width = size
     sourceCanvas.height = size
@@ -126,7 +198,7 @@ function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
       if (isOn) {
         drawChunkyReveal(ctx, img)
       } else {
-        ctx.clearRect(0, 0, 128, 128)
+        ctx.clearRect(0, 0, size, size)
       }
     }
   }, [resolvedSrc])
@@ -151,13 +223,13 @@ function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
       drawChunkyReveal(ctx, img)
     } else if (!isOn) {
       clearTimeoutRef.current = window.setTimeout(() => {
-        ctx.clearRect(0, 0, 128, 128)
+        ctx.clearRect(0, 0, size, size)
         clearTimeoutRef.current = null
       }, 700)
     }
 
     prevOnRef.current = isOn
-  }, [isOn])
+  }, [isOn, size])
 
   useEffect(() => {
     return () => {
@@ -175,16 +247,97 @@ function AnimatedRewardTile({ src, label, isOn }: AnimatedRewardTileProps) {
       <canvas
         ref={canvasRef}
         className="animal-canvas"
-        width={128}
-        height={128}
+        width={size}
+        height={size}
         aria-label={label}
       />
-      <div
-        className="animal-silhouette"
-        style={{ ['--animal-url' as any]: `url(${resolvedSrc})` }}
-        aria-hidden
-      />
+      {silhouetteMode === 'mask' ? (
+        <div
+          className="animal-silhouette"
+          style={{ ['--animal-url' as any]: `url(${resolvedSrc})` }}
+          aria-hidden
+        />
+      ) : (
+        <div
+          className="animal-image-silhouette"
+          style={{ backgroundImage: `url(${resolvedSrc})` }}
+          aria-hidden
+        />
+      )}
     </figure>
+  )
+}
+
+type CollectionRowProps = {
+  title: string
+  ribbon: string
+  items: RewardItem[]
+  silhouetteMode: SilhouetteMode
+  tileSize: number
+}
+
+function CollectionRow({ title, ribbon, items, silhouetteMode, tileSize }: CollectionRowProps) {
+  const sampledItems = useMemo(() => {
+    const copy = [...items]
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[copy[i], copy[j]] = [copy[j], copy[i]]
+    }
+    return copy.slice(0, Math.min(ROW_SAMPLE_COUNT, copy.length))
+  }, [items])
+  const [litOrder, setLitOrder] = useState<number[]>([])
+
+  useEffect(() => {
+    const selected: number[] = []
+    while (selected.length < Math.min(ROW_LIT_COUNT, sampledItems.length)) {
+      const candidate = Math.floor(Math.random() * sampledItems.length)
+      if (!selected.includes(candidate)) selected.push(candidate)
+    }
+    setLitOrder(selected)
+  }, [sampledItems])
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setLitOrder((prev) => {
+        if (prev.length === 0) return prev
+        const onSet = new Set(prev)
+        const offIndexes: number[] = []
+
+        for (let i = 0; i < sampledItems.length; i += 1) {
+          if (!onSet.has(i)) offIndexes.push(i)
+        }
+        if (offIndexes.length === 0) return prev
+
+        const toTurnOn = offIndexes[Math.floor(Math.random() * offIndexes.length)]
+        const [, ...rest] = prev
+        return [...rest, toTurnOn]
+      })
+    }, 850)
+
+    return () => window.clearInterval(intervalId)
+  }, [sampledItems])
+
+  const moreCount = Math.max(0, items.length - sampledItems.length)
+
+  return (
+    <section className="collection-track">
+      <div className="collection-track-head">
+        <div className="locked-ribbon">{ribbon} - {title}</div>
+        <span className="collection-more">+ {moreCount} more</span>
+      </div>
+      <div className="collection-grid" style={{ ['--tile-size' as any]: `${tileSize}px` }}>
+        {sampledItems.map((item, index) => (
+          <AnimatedRewardTile
+            key={`${title}-${item.src}`}
+            src={item.src}
+            label={item.label}
+            isOn={litOrder.includes(index)}
+            size={tileSize}
+            silhouetteMode={silhouetteMode}
+          />
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -195,46 +348,6 @@ function App() {
   const [reducedMotion, setReducedMotion] = useState(false)
   const [activeShot, setActiveShot] = useState(0)
   const [activeReward, setActiveReward] = useState(0)
-  const shuffledAnimals = useMemo(() => {
-    const copy = [...collectionAnimals]
-    for (let i = copy.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[copy[i], copy[j]] = [copy[j], copy[i]]
-    }
-    return copy
-  }, [])
-  const [litAnimalOrder, setLitAnimalOrder] = useState<number[]>([])
-
-  useEffect(() => {
-    const selected: number[] = []
-    while (selected.length < Math.min(3, shuffledAnimals.length)) {
-      const candidate = Math.floor(Math.random() * shuffledAnimals.length)
-      if (!selected.includes(candidate)) selected.push(candidate)
-    }
-    setLitAnimalOrder(selected)
-  }, [shuffledAnimals])
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setLitAnimalOrder((prev) => {
-        if (prev.length === 0) return prev
-        const onSet = new Set(prev)
-        const offIndexes: number[] = []
-
-        for (let i = 0; i < shuffledAnimals.length; i += 1) {
-          if (!onSet.has(i)) offIndexes.push(i)
-        }
-
-        if (offIndexes.length === 0) return prev
-
-        const toTurnOn = offIndexes[Math.floor(Math.random() * offIndexes.length)]
-        const [, ...rest] = prev // oldest turns off
-        return [...rest, toTurnOn]
-      })
-    }, 850)
-
-    return () => window.clearInterval(intervalId)
-  }, [shuffledAnimals])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -459,41 +572,17 @@ function App() {
       <section className="section-block reward-section">
         <p className="kicker">REWARD COLLECTION</p>
         <h2 className="section-title">Collect them all!</h2>
-        <div className="animal-grid">
-          {shuffledAnimals.map((animal, index) => (
-            <AnimatedRewardTile
-              key={animal.src}
-              src={animal.src}
-              label={animal.label}
-              isOn={litAnimalOrder.includes(index)}
+        <div className="locked-collections">
+          {rewardCollections.map((collection) => (
+            <CollectionRow
+              key={collection.id}
+              title={collection.title}
+              ribbon={collection.ribbon}
+              items={collection.items}
+              silhouetteMode={collection.silhouetteMode}
+              tileSize={64}
             />
           ))}
-        </div>
-        <div className="locked-collections">
-          <section className="locked-track">
-            <div className="locked-ribbon">Unlockable - Clay Animals</div>
-            <div className="locked-grid">
-              {lockedClayAnimals.map((item) => (
-                <img key={item.src} src={item.src} alt={item.label} loading="lazy" />
-              ))}
-            </div>
-          </section>
-          <section className="locked-track">
-            <div className="locked-ribbon">Unlockable - Pixel Objects</div>
-            <div className="locked-grid">
-              {lockedPixelObjects.map((item) => (
-                <img key={item.src} src={item.src} alt={item.label} loading="lazy" />
-              ))}
-            </div>
-          </section>
-          <section className="locked-track">
-            <div className="locked-ribbon">Unlockable - Clay Objects</div>
-            <div className="locked-grid">
-              {lockedClayObjects.map((item) => (
-                <img key={item.src} src={item.src} alt={item.label} loading="lazy" />
-              ))}
-            </div>
-          </section>
         </div>
       </section>
 
